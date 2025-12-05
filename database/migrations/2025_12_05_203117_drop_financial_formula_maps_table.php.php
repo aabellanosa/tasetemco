@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('financial_formula_map', function (Blueprint $table) {
+        Schema::create('financial_formula_maps', function (Blueprint $table) {
             $table->id();
 
             // The derived line item this formula belongs to
@@ -28,6 +28,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('financial_formula_map');
+        Schema::dropIfExists('financial_formula_maps');
     }
 };
