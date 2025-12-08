@@ -11,23 +11,27 @@ return new class extends Migration
         Schema::create('financial_line_items', function (Blueprint $table) {
             $table->id();
 
-            // Unique normalized code (e.g., "cash_on_hand")
-            $table->string('code')->unique();
+            $table->string('code')->unique();  
+                // e.g. "cash_on_hand", "loan_associates"
 
-            // Client-facing label (e.g., "Cash on Hand")
-            $table->string('label');
+            $table->string('label');            
+                // UI text label (what appears on column 1)
 
-            // Top-level grouping: assets, liabilities, equity
-            $table->string('section');
+            $table->integer('display_order');   
+                // exact row order in PDF
 
-            // Sub-sections: current_assets, non_current_assets, etc
-            $table->string('sub_section')->nullable();
+            $table->unsignedTinyInteger('pdf_column')
+                ->default(4);
+                // 2,3,4 = where editable or derived value sits
+                // 1 = title/subtitle/header (no numbers)
 
-            // Whether user can edit this value
-            $table->boolean('is_editable')->default(true);
+            $table->boolean('is_editable')
+                ->default(true);
+                // false = derived totals/subtotals
 
-            // Controls ordering inside the UI
-            $table->integer('display_order')->default(0);
+            $table->unsignedTinyInteger('indent_level')
+                ->default(0);
+                // 0 = main, 1 = subsection, 2 = sub-item
 
             $table->timestamps();
         });

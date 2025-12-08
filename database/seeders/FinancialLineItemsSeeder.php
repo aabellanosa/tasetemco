@@ -11,427 +11,141 @@ class FinancialLineItemsSeeder extends Seeder
     {
         $items = [
 
-            // ============================
-            // 1. ASSETS
-            // ============================
+            //-------------------------------
+            // CURRENT ASSETS
+            //-------------------------------
+            ['code' => 'current_assets_title', 'label' => 'CURRENT ASSETS:', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
 
-            // --- 1.1 CASH & CASH EQUIVALENT ---
-            [
-                'code' => 'cash_on_hand',
-                'label' => 'Cash on Hand',
-                'section' => 'assets',
-                'sub_section' => 'cash_and_cash_equivalent',
-                'is_editable' => true,
-                'display_order' => 1,
-            ],
-            [
-                'code' => 'gcash_and_load',
-                'label' => 'GCash & Load',
-                'section' => 'assets',
-                'sub_section' => 'cash_and_cash_equivalent',
-                'is_editable' => true,
-                'display_order' => 2,
-            ],
-            [
-                'code' => 'cash_in_bank_savings',
-                'label' => 'Cash in Bank - Savings',
-                'section' => 'assets',
-                'sub_section' => 'cash_and_cash_equivalent',
-                'is_editable' => true,
-                'display_order' => 3,
-            ],
-            [
-                'code' => 'cash_in_bank_checking',
-                'label' => 'Cash in Bank - Checking',
-                'section' => 'assets',
-                'sub_section' => 'cash_and_cash_equivalent',
-                'is_editable' => true,
-                'display_order' => 4,
-            ],
-            [
-                'code' => 'cash_equivalent_total',
-                'label' => 'Total Cash & Cash Equivalent',
-                'section' => 'assets',
-                'sub_section' => 'cash_and_cash_equivalent',
-                'is_editable' => false,
-                'display_order' => 5,
-            ],
+            ['code' => 'cash_and_equivalent_title', 'label' => 'CASH AND CASH EQUIVALENT', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 1],
 
-            // --- 1.2 OTHER CURRENT ASSETS ---
-            [
-                'code' => 'regular_loans',
-                'label' => 'Regular Loans',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => true,
-                'display_order' => 6,
-            ],
-            [
-                'code' => 'associates',
-                'label' => 'Associates',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => true,
-                'display_order' => 7,
-            ],
-            [
-                'code' => 'micro_project',
-                'label' => 'Micro Project',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => true,
-                'display_order' => 8,
-            ],
-            [
-                'code' => 'past_due',
-                'label' => 'Past Due',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => true,
-                'display_order' => 9,
-            ],
-            [
-                'code' => 'allowance_for_probable_losses',
-                'label' => 'Allowance for Probable Losses',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => true,
-                'display_order' => 10,
-            ],
-            [
-                'code' => 'past_due_adjusted',
-                'label' => 'Past Due (Net of Allowance)',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => false,
-                'display_order' => 11,
-            ],
-            [
-                'code' => 'total_loan_receivables_past_adjustments',
-                'label' => 'Total Loan Receivables (Adjusted)',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => false,
-                'display_order' => 12,
-            ],
+            ['code' => 'cash_on_hand', 'label' => 'CASH ON HAND', 'pdf_column' => 4, 'is_editable' => true, 'indent' => 2],
+            ['code' => 'gcash_load', 'label' => 'GCASH & LOAD', 'pdf_column' => 4, 'is_editable' => true, 'indent' => 2],
 
-            [
-                'code' => 'merchandise_inventory',
-                'label' => 'Merchandise Inventory',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => true,
-                'display_order' => 13,
-            ],
-            [
-                'code' => 'bio_assets',
-                'label' => 'Bio Assets',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => true,
-                'display_order' => 14,
-            ],
-            [
-                'code' => 'advance_to_suppliers',
-                'label' => 'Advance to Suppliers',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => true,
-                'display_order' => 15,
-            ],
+            ['code' => 'lbp_ca', 'label' => 'CASH IN BANK LBP C/A', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 2],
+            ['code' => 'lbp_savings', 'label' => 'LBP SAVINGS', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 3],
+            ['code' => 'dbp_savings', 'label' => 'DBP SAVINGS', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 3],
 
-            [
-                'code' => 'total_current_assets',
-                'label' => 'Total Current Assets',
-                'section' => 'assets',
-                'sub_section' => 'other_current_assets',
-                'is_editable' => false,
-                'display_order' => 16,
-            ],
+            ['code' => 'one_coop', 'label' => 'ONE COOP (former CCB)', 'pdf_column' => 4, 'is_editable' => true, 'indent' => 3],
 
-            // --- 1.3 NON-CURRENT ASSETS ---
-            [
-                'code' => 'property_and_equipment',
-                'label' => 'Property & Equipment',
-                'section' => 'assets',
-                'sub_section' => 'non_current_assets',
-                'is_editable' => true,
-                'display_order' => 17,
-            ],
-            [
-                'code' => 'acquisition_2023',
-                'label' => 'Acquisition (2023)',
-                'section' => 'assets',
-                'sub_section' => 'non_current_assets',
-                'is_editable' => true,
-                'display_order' => 18,
-            ],
-            [
-                'code' => 'accumulated_depreciation',
-                'label' => 'Less: Accumulated Depreciation',
-                'section' => 'assets',
-                'sub_section' => 'non_current_assets',
-                'is_editable' => true,
-                'display_order' => 19,
-            ],
-            [
-                'code' => 'property_and_equipment_net',
-                'label' => 'Net PPE',
-                'section' => 'assets',
-                'sub_section' => 'non_current_assets',
-                'is_editable' => false,
-                'display_order' => 20,
-            ],
+            ['code' => 'total_cash_equivalents', 'label' => 'TOTAL (CASH AND CASH EQUIVALENTS)', 'pdf_column' => 4, 'is_editable' => false, 'indent' => 2],
 
-            [
-                'code' => 'investment_pftech',
-                'label' => 'Investment - PFTECH',
-                'section' => 'assets',
-                'sub_section' => 'non_current_assets',
-                'is_editable' => true,
-                'display_order' => 21,
-            ],
-            [
-                'code' => 'investment_climbs',
-                'label' => 'Investment - CLIMBS',
-                'section' => 'assets',
-                'sub_section' => 'non_current_assets',
-                'is_editable' => true,
-                'display_order' => 22,
-            ],
-            [
-                'code' => 'investment_ccb_cbss',
-                'label' => 'Investment - CCB/CBSS',
-                'section' => 'assets',
-                'sub_section' => 'non_current_assets',
-                'is_editable' => true,
-                'display_order' => 23,
-            ],
-            [
-                'code' => 'investments_total',
-                'label' => 'Total Investments',
-                'section' => 'assets',
-                'sub_section' => 'non_current_assets',
-                'is_editable' => false,
-                'display_order' => 24,
-            ],
+            // spacer row
+            ['code' => 'spacer_1', 'label' => '', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
 
-            [
-                'code' => 'total_non_current_assets',
-                'label' => 'Total Non-Current Assets',
-                'section' => 'assets',
-                'sub_section' => 'non_current_assets',
-                'is_editable' => false,
-                'display_order' => 25,
-            ],
+            //-------------------------------
+            // LOAN RECEIVABLES
+            //-------------------------------
+            ['code' => 'loan_receivable_title', 'label' => 'LOAN RECEIVABLE:', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 1],
 
-            [
-                'code' => 'total_assets',
-                'label' => 'TOTAL ASSETS',
-                'section' => 'assets',
-                'sub_section' => null,
-                'is_editable' => false,
-                'display_order' => 26,
-            ],
+            ['code' => 'regular_loans', 'label' => 'REGULAR LOANS (See attached Schedule)', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 2],
+            ['code' => 'associates', 'label' => 'ASSOCIATES', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 2],
+            ['code' => 'micro_project', 'label' => 'MICRO PROJECT', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 2],
 
-            // ============================
-            // 2. LIABILITIES
-            // ============================
+            ['code' => 'past_due', 'label' => 'PAST DUE', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 2],
 
-            // --- 2.1 CURRENT LIABILITIES ---
-            [
-                'code' => 'savings_deposit',
-                'label' => 'Savings Deposit',
-                'section' => 'liabilities',
-                'sub_section' => 'current_liabilities',
-                'is_editable' => true,
-                'display_order' => 27,
-            ],
-            [
-                'code' => 'due_to_union_federation',
-                'label' => 'Due to Union / Federation',
-                'section' => 'liabilities',
-                'sub_section' => 'current_liabilities',
-                'is_editable' => true,
-                'display_order' => 28,
-            ],
-            [
-                'code' => 'other_peso_savings',
-                'label' => 'Other Peso Savings',
-                'section' => 'liabilities',
-                'sub_section' => 'current_liabilities',
-                'is_editable' => true,
-                'display_order' => 29,
-            ],
-            [
-                'code' => 'interest_on_share_capital_and_refund_payable',
-                'label' => 'Interest on Share Capital and Refund Payable',
-                'section' => 'liabilities',
-                'sub_section' => 'current_liabilities',
-                'is_editable' => true,
-                'display_order' => 30,
-            ],
-            [
-                'code' => 'unearned_interest_income',
-                'label' => 'Unearned Interest Income',
-                'section' => 'liabilities',
-                'sub_section' => 'current_liabilities',
-                'is_editable' => true,
-                'display_order' => 31,
-            ],
+            ['code' => 'allowance_probable', 'label' => 'LESS: ALLOWANCE FOR PROBABLE LOSSES', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 2],
 
-            [
-                'code' => 'total_current_liabilities',
-                'label' => 'Total Current Liabilities',
-                'section' => 'liabilities',
-                'sub_section' => 'current_liabilities',
-                'is_editable' => false,
-                'display_order' => 32,
-            ],
+            ['code' => 'unearned_income', 'label' => 'LESS: UNEARNED INCOME', 'pdf_column' => 4, 'is_editable' => true, 'indent' => 2],
 
-            // --- 2.2 NON-CURRENT LIABILITIES ---
-            [
-                'code' => 'retirement_fund_payable',
-                'label' => 'Retirement Fund Payable',
-                'section' => 'liabilities',
-                'sub_section' => 'non_current_liabilities',
-                'is_editable' => true,
-                'display_order' => 33,
-            ],
-            [
-                'code' => 'loans_payable_lbp',
-                'label' => 'Loans Payable - LBP',
-                'section' => 'liabilities',
-                'sub_section' => 'non_current_liabilities',
-                'is_editable' => true,
-                'display_order' => 34,
-            ],
-            [
-                'code' => 'loans_payable_lgu',
-                'label' => 'Loans Payable - LGU',
-                'section' => 'liabilities',
-                'sub_section' => 'non_current_liabilities',
-                'is_editable' => true,
-                'display_order' => 35,
-            ],
-            [
-                'code' => 'loans_payable_ccb_cbss',
-                'label' => 'Loans Payable - CCB/CBSS',
-                'section' => 'liabilities',
-                'sub_section' => 'non_current_liabilities',
-                'is_editable' => true,
-                'display_order' => 36,
-            ],
-            [
-                'code' => 'total_loans_payable',
-                'label' => 'Total Loans Payable',
-                'section' => 'liabilities',
-                'sub_section' => 'non_current_liabilities',
-                'is_editable' => false,
-                'display_order' => 37,
-            ],
-            [
-                'code' => 'total_non_current_liabilities',
-                'label' => 'Total Non-Current Liabilities',
-                'section' => 'liabilities',
-                'sub_section' => 'non_current_liabilities',
-                'is_editable' => false,
-                'display_order' => 38,
-            ],
+            ['code' => 'spacer_2', 'label' => '', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
 
-            [
-                'code' => 'total_liabilities',
-                'label' => 'TOTAL LIABILITIES',
-                'section' => 'liabilities',
-                'sub_section' => null,
-                'is_editable' => false,
-                'display_order' => 39,
-            ],
+            ['code' => 'total_loans_receivable', 'label' => 'TOTAL LOANS AND OTHER RECEIVABLES', 'pdf_column' => 4, 'is_editable' => false, 'indent' => 2],
 
-            // ============================
-            // 3. EQUITY
-            // ============================
+            ['code' => 'spacer_3', 'label' => '', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
 
-            [
-                'code' => 'share_capital',
-                'label' => 'Share Capital',
-                'section' => 'equity',
-                'sub_section' => 'equity_main',
-                'is_editable' => true,
-                'display_order' => 40,
-            ],
-            [
-                'code' => 'grant_capital',
-                'label' => 'Grant Capital',
-                'section' => 'equity',
-                'sub_section' => 'equity_main',
-                'is_editable' => true,
-                'display_order' => 41,
-            ],
+            //-------------------------------
+            // ADVANCES & INVENTORY
+            //-------------------------------
+            ['code' => 'advance_suppliers', 'label' => 'ADVANCE TO SUPPLIERS', 'pdf_column' => 4, 'is_editable' => true, 'indent' => 1],
+            ['code' => 'merch_inventory', 'label' => 'MERCHANDISE INVENTORY', 'pdf_column' => 4, 'is_editable' => true, 'indent' => 1],
 
-            // --- Statutory Funds ---
-            [
-                'code' => 'reserve_fund',
-                'label' => 'Reserve Fund',
-                'section' => 'equity',
-                'sub_section' => 'statutory_funds',
-                'is_editable' => true,
-                'display_order' => 42,
-            ],
-            [
-                'code' => 'education_and_training_fund',
-                'label' => 'Education & Training Fund',
-                'section' => 'equity',
-                'sub_section' => 'statutory_funds',
-                'is_editable' => true,
-                'display_order' => 43,
-            ],
-            [
-                'code' => 'community_development_fund',
-                'label' => 'Community Development Fund',
-                'section' => 'equity',
-                'sub_section' => 'statutory_funds',
-                'is_editable' => true,
-                'display_order' => 44,
-            ],
-            [
-                'code' => 'optional_fund',
-                'label' => 'Optional Fund',
-                'section' => 'equity',
-                'sub_section' => 'statutory_funds',
-                'is_editable' => true,
-                'display_order' => 45,
-            ],
-            [
-                'code' => 'total_statutory_fund',
-                'label' => 'Total Statutory Fund',
-                'section' => 'equity',
-                'sub_section' => 'statutory_funds',
-                'is_editable' => false,
-                'display_order' => 46,
-            ],
+            ['code' => 'total_current_assets', 'label' => 'TOTAL CURRENT ASSETS', 'pdf_column' => 4, 'is_editable' => false, 'indent' => 1],
 
-            [
-                'code' => 'total_equity',
-                'label' => 'TOTAL EQUITY',
-                'section' => 'equity',
-                'sub_section' => null,
-                'is_editable' => false,
-                'display_order' => 47,
-            ],
+            ['code' => 'spacer_4', 'label' => '', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
 
-            [
-                'code' => 'total_liabilities_and_equity',
-                'label' => 'TOTAL LIABILITIES & EQUITY',
-                'section' => 'equity',
-                'sub_section' => null,
-                'is_editable' => false,
-                'display_order' => 48,
-            ],
+            //-------------------------------
+            // NON-CURRENT ASSETS
+            //-------------------------------
+            ['code' => 'non_current_assets_title', 'label' => 'NON-CURRENT ASSETS', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
+
+            ['code' => 'ppe', 'label' => 'PROPERTY & EQUIPMENT', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 1],
+            ['code' => 'acquisition_2023', 'label' => 'ADD: ACQUISITION, 2023', 'pdf_column' => 1, 'is_editable' => true, 'indent' => 2],
+            ['code' => 'total_ppe_acquisition', 'label' => 'TOTAL PPE AND ACQUISITION', 'pdf_column' => 2, 'is_editable' => false, 'indent' => 1],
+            ['code' => 'accum_depreciation', 'label' => 'LESS: ACCUMULATED DEPRECIATION', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 1],
+
+            ['code' => 'spacer_5', 'label' => '', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
+
+            ['code' => 'ppe_net', 'label' => 'PROPERTY & EQUIPMENT, NET', 'pdf_column' => 3, 'is_editable' => false, 'indent' => 1],
+
+            ['code' => 'investment_pftech', 'label' => 'INVESTMENT IN PFTEC', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 1],
+            ['code' => 'investment_climbs', 'label' => 'IN CLIMBS', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 2],
+            ['code' => 'investment_ccb_cbss', 'label' => 'IN CCB/CBSS', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 2],
+
+            ['code' => 'total_non_current_assets', 'label' => 'TOTAL NON-CURRENT ASSETS', 'pdf_column' => 4, 'is_editable' => false, 'indent' => 1],
+
+            ['code' => 'total_assets', 'label' => 'TOTAL ASSETS', 'pdf_column' => 4, 'is_editable' => false, 'indent' => 0],
+
+            ['code' => 'spacer_6', 'label' => '', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
+
+            //-------------------------------
+            // CURRENT LIABILITIES
+            //-------------------------------
+            ['code' => 'current_liabilities_title', 'label' => 'CURRENT LIABILITIES', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
+
+            ['code' => 'savings_deposit', 'label' => 'SAVINGS DEPOSIT (Pls see attched schedule)', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 1],
+            ['code' => 'due_union_fed', 'label' => 'DUE TO UNION/FEDERATION', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 1],
+            ['code' => 'patronage_refund', 'label' => 'PATRONAGE REFUND PAYABLE', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 1],
+            ['code' => 'interest_share_capital', 'label' => 'INTEREST ON SHARE CAPITAL & REFUND PAYABLE', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 1],
+
+            ['code' => 'total_current_liabilities', 'label' => 'TOTAL CURRENT LIABILITIES', 'pdf_column' => 4, 'is_editable' => false, 'indent' => 1],
+
+            ['code' => 'spacer_7', 'label' => '', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
+
+            //-------------------------------
+            // NON-CURRENT LIABILITIES
+            //-------------------------------
+            ['code' => 'retirement_fund', 'label' => 'RETIREMENT FUND PAYABLE', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 1],
+            ['code' => 'revolving_fund', 'label' => 'REVOLVING FUNDS PAYABLE', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 1],
+
+            ['code' => 'loans_lbp', 'label' => 'LOANS PAYABLE - LBP', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 1],
+            ['code' => 'loans_lgu', 'label' => 'LGU', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 2],
+            ['code' => 'loans_ccb_cbss', 'label' => 'CCB/CBSS', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 2],
+
+            ['code' => 'total_non_current_liabilities', 'label' => 'TOTAL NON-CURRENT LIABILITIES', 'pdf_column' => 4, 'is_editable' => false, 'indent' => 1],
+
+            ['code' => 'total_liabilities', 'label' => 'TOTAL LIABILITIES', 'pdf_column' => 4, 'is_editable' => false, 'indent' => 0],
+
+            //-------------------------------
+            // EQUITY
+            //-------------------------------
+            ['code' => 'equity_title', 'label' => 'EQUITY', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 0],
+
+            ['code' => 'share_capital', 'label' => 'SHARE CAPITAL (PLS. SEE ATT.SCHEDULE)', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 1],
+            ['code' => 'grant_capital', 'label' => 'GRANT CAPITAL', 'pdf_column' => 3, 'is_editable' => true, 'indent' => 1],
+
+            ['code' => 'statutory_fund_title', 'label' => 'STATUTORY FUND:', 'pdf_column' => 1, 'is_editable' => false, 'indent' => 1],
+
+            ['code' => 'reserve_fund', 'label' => 'RESERVE FUND', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 2],
+            ['code' => 'education_training', 'label' => 'EDUCATION & TRAINING FUND', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 2],
+            ['code' => 'community_dev', 'label' => 'COMMUNITY DEVELOPMENT FUND', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 2],
+            ['code' => 'optional_fund', 'label' => 'OPTIONAL FUND', 'pdf_column' => 2, 'is_editable' => true, 'indent' => 2],
+
+            ['code' => 'total_equity', 'label' => 'TOTAL EQUITY', 'pdf_column' => 4, 'is_editable' => false, 'indent' => 1],
+
+            ['code' => 'total_liabilities_equity', 'label' => 'TOTAL LIABILITIES & EQUITY', 'pdf_column' => 4, 'is_editable' => false, 'indent' => 0],
+
         ];
 
+        $order = 1;
         foreach ($items as $item) {
-            FinancialLineItem::create($item);
+            FinancialLineItem::create([
+                'code'          => $item['code'],
+                'label'         => $item['label'],
+                'display_order' => $order++,
+                'pdf_column'    => $item['pdf_column'],
+                'indent_level'  => $item['indent'],
+                'is_editable'   => $item['is_editable'],
+            ]);
         }
     }
 }

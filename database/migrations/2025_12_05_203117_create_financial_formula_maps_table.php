@@ -11,18 +11,14 @@ return new class extends Migration
         Schema::create('financial_formula_maps', function (Blueprint $table) {
             $table->id();
 
-            // The derived line item this formula belongs to
-            $table->foreignId('line_item_id')
+            $table->foreignId('financial_line_item_id')
                 ->constrained('financial_line_items')
-                ->cascadeOnDelete();
+                ->onDelete('cascade');
 
-            // Formula string using item codes: "loan1 + loan2 - allowance"
-            $table->text('formula');
+            $table->text('formula')->nullable();
+                // e.g. "regular_loans + associates + micro_project + past_due - allowance_for_probable_losses"
 
             $table->timestamps();
-
-            // Unique: one formula per derived line-item
-            $table->unique('line_item_id');
         });
     }
 

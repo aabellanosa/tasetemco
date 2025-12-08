@@ -1,0 +1,202 @@
+CURRENT ASSETS:
+   CASH AND CASH EQUIVALENT
+     CASH ON HAND	
+     GCASH & LOAD	
+     CASH IN BANK LBP C/A
+                  LBP SAVINGS
+                  DBP SAVINGS
+                  ONE COOP (former CCB)
+     TOTAL (CASH AND CASH EWUIVALENTS)
+   
+   LOAN RECEIVABLE: 		
+     REGULAR LOANS (See attached Schedule)
+     ASSOCIATES	
+     MICRO PROJECT	
+     PAST DUE	
+     LESS: ALLOWANCE FOR PROBABLE LOSSES	
+     LESS: UNEARNED INCOME	
+			
+     TOTAL LOANS AND OTHER RECEIVABLES	
+			
+    ADVANCE TO SUPPLIERS		
+    MERCHANDISE INVENTORY		
+      TOTAL CURRENT ASSETS	
+
+NON-CURRENT ASSETS			
+    PROPERTY & EQUIPMENT		
+    ADD: ACQUISITION, 2023		
+      TOTAL PPE AND ACQUISITION	
+    LESS: ACCUMULATED DEPRECIATION				
+    PROPERTY & EQUIPMENT, NET			
+    INVESTMENT IN PFTEC		
+               IN CLIMBS	
+               IN CCB/CBSS	
+      TOTAL NON-CURRENT ASSETS	
+TOTAL ASSETS			
+
+CURRENT LIABILITIES
+    SAVINGS DEPOSIT (Pls see attched schedule)		
+    DUE TO UNION/FEDERATION		
+    PATRONAGE REFUND PAYABLE		
+    INTEREST ON SHARE CAPITAL & REFUND PAYABLE
+      TOTAL  CURRENT LIABILITIES	
+			
+    RETIREMENT FUND PAYABLE		
+    REVOLVING FUNDS PAYABLE		
+    LOANS PAYABLE-   LBP
+                     LGU
+                     CCB/CBSS
+      TOTAL NON-CURRENT LIABILITIES	
+      TOTAL LIABILITIES	
+EQUITY			
+    SHARE CAPITAL (PLS. SEE ATT.SCHEDULE)		
+    GRANT CAPITAL		
+    STATUTORY FUND:
+      RESERVE FUND
+      EDUCATION & TRAINING FUND	
+      COMMUNITY DEVELOPMENT FUND	
+      OPTIONAL FUND	
+      TOTAL EQUITY	
+TOTAL LIABILITIES & EQUITY		
+
+Hey Wings, before we dive in to recoding the UI.  I would want to lock in the columns 1-4 setup.  I am pasting the content of the columns (1-4) as well as the comments on them.  Rows are separated by <==> for your review.  Can you confirm with 1000% certainty that we are aligned with our understanding vis-a-vis the last pdf I sent.  Here are the expected contents of cols 1-4 with comments:
+
+Column 1	<==>	Column 2	<==>	Colum 3	<==>	Column 4	<==>	Comment
+CURRENT ASSETS:	<==>		<==>		<==>		<==>	Title ONLY
+   CASH AND CASH EQUIVALENT	<==>		<==>		<==>		<==>	Sub-title (indented)
+     CASH ON HAND	<==>		<==>		<==>	164544	<==>	editable
+     GCASH & LOAD	<==>		<==>		<==>	61238	<==>	editable
+     CASH IN BANK LBP C/A	<==>		<==>	1244183	<==>		<==>	editable
+                  LBP SAVINGS	<==>		<==>	125075	<==>		<==>	editable
+                  DBP SAVINGS	<==>		<==>	7566	<==>		<==>	editable
+                  ONE COOP (former CCB)	<==>		<==>	412980	<==>	1789804	<==>	editable / derived(sub-total)
+     TOTAL (CASH AND CASH EQUIVALENTS)	<==>		<==>		<==>	2015586	<==>	derived
+   	<==>		<==>		<==>		<==>	Space for sectioning
+   LOAN RECEIVABLE: 	<==>		<==>		<==>		<==>	Sub-title (indented)
+     REGULAR LOANS (See attached Schedule)	<==>		<==>	8686226	<==>		<==>	editable
+     ASSOCIATES	<==>		<==>	746162	<==>		<==>	editable
+     MICRO PROJECT	<==>		<==>	1606977	<==>		<==>	editable
+     PAST DUE	<==>	578988	<==>		<==>		<==>	editable
+     LESS: ALLOWANCE FOR PROBABLE LOSSES	<==>	287087	<==>	291901	<==>	11331266	<==>	editable / derived(sub-total) / derived (sub-total)
+     LESS: UNEARNED INCOME	<==>		<==>		<==>	1174809	<==>	editable
+	<==>		<==>		<==>		<==>	Space for sectioning
+     TOTAL LOANS AND OTHER RECEIVABLES	<==>		<==>		<==>	10156457	<==>	derived
+	<==>		<==>		<==>		<==>	Space for sectioning
+    ADVANCE TO SUPPLIERS	<==>		<==>		<==>	34811	<==>	editable
+    MERCHANDISE INVENTORY	<==>		<==>		<==>	142377	<==>	editable
+      TOTAL CURRENT ASSETS	<==>		<==>		<==>	12349231	<==>	derived
+	<==>		<==>		<==>		<==>	Space for sectioning
+NON-CURRENT ASSETS	<==>		<==>		<==>		<==>	Title ONLY
+    PROPERTY & EQUIPMENT	<==>	2379333	<==>		<==>		<==>	editable
+    ADD: ACQUISITION, 2023	<==>		<==>		<==>		<==>	editable
+      TOTAL PPE AND ACQUISITION	<==>	2379333	<==>		<==>		<==>	derived
+    LESS: ACCUMULATED DEPRECIATION	<==>	1166517	<==>		<==>		<==>	editable
+							<==>	Space for sectioning
+    PROPERTY & EQUIPMENT, NET	<==>		<==>	1212816	<==>		<==>	derived
+    INVESTMENT IN PFTEC	<==>	176442	<==>		<==>		<==>	editable
+               IN CLIMBS	<==>	25000	<==>		<==>		<==>	editable
+               IN CCB/CBSS	<==>	104000	<==>	305442	<==>		<==>	editable / derived (sub-tital)
+      TOTAL NON-CURRENT ASSETS	<==>		<==>		<==>	1518258	<==>	derived
+TOTAL ASSETS	<==>		<==>		<==>	13867489	<==>	derived
+	<==>		<==>		<==>		<==>	Space for sectioning
+CURRENT LIABILITIES	<==>		<==>		<==>		<==>	Title ONLY
+    SAVINGS DEPOSIT (Pls see attched schedule)	<==>		<==>	1336324	<==>		<==>	editable
+    DUE TO UNION/FEDERATION	<==>		<==>	113337	<==>		<==>	editable
+    PATRONAGE REFUND PAYABLE	<==>		<==>	194589	<==>		<==>	editable
+    INTEREST ON SHARE CAPITAL & REFUND PAYABLE	<==>		<==>	454041	<==>		<==>	editable
+      TOTAL  CURRENT LIABILITIES	<==>		<==>		<==>	2098291	<==>	derived
+	<==>		<==>		<==>		<==>	Space for sectioning
+    RETIREMENT FUND PAYABLE	<==>		<==>	755104	<==>		<==>	editable
+    REVOLVING FUNDS PAYABLE	<==>		<==>	126750	<==>		<==>	editable
+    LOANS PAYABLE-   LBP	<==>	2668037	<==>		<==>		<==>	editable
+                     LGU	<==>	0	<==>		<==>		<==>	editable
+                     CCB/CBSS	<==>	0	<==>	2668037	<==>		<==>	editable / derived (subtotal)
+      TOTAL NON-CURRENT LIABILITIES	<==>		<==>		<==>	3549891	<==>	derived
+      TOTAL LIABILITIES	<==>		<==>		<==>	5648182	<==>	derived
+EQUITY	<==>		<==>		<==>		<==>	Title ONLY
+    SHARE CAPITAL (PLS. SEE ATT.SCHEDULE)	<==>		<==>	6001321	<==>		<==>	editable
+    GRANT CAPITAL	<==>		<==>	600000	<==>		<==>	editable
+    STATUTORY FUND:	<==>		<==>		<==>		<==>	Sub-title (indented)
+      RESERVE FUND	<==>	1252065	<==>		<==>		<==>	editable
+      EDUCATION & TRAINING FUND	<==>	67344	<==>		<==>		<==>	editable
+      COMMUNITY DEVELOPMENT FUND	<==>	27798	<==>		<==>		<==>	editable
+      OPTIONAL FUND	<==>	270779	<==>	1617986	<==>		<==>	editable / derived (subtotal)
+      TOTAL EQUITY	<==>		<==>		<==>	8219307	<==>	derived
+TOTAL LIABILITIES & EQUITY	<==>		<==>		<==>	13867489	<==>	derived
+
+Befor that Wings, I think we need to re-align our tables too as your description of some tables is not what I have and not what I seeded.  Can I send you my an sql file and have it re-interprted so we can proceed.
+
+Hey Wings, I have put in comments when necessary to confirm your understanding::
+Confirm: When a line has values in multiple PDF columns (e.g. subtotals appearing in col3 and col4), we treat:
+
+➡️ The stored numeric value is ALWAYS column 4
+⚠️ This is not always the case.  Consider this snippet of the table:
+     CASH IN BANK LBP C/A	<==>		<==>	1244183	<==>		<==>	editable
+                  LBP SAVINGS	<==>		<==>	125075	<==>		<==>	editable
+                  DBP SAVINGS	<==>		<==>	7566	<==>		<==>	editable
+                  ONE COOP (former CCB)	<==>		<==>	412980	<==>	1789804	<==>	editable / derived(sub-total)
+     TOTAL (CASH AND CASH EQUIVALENTS)	<==>		<==>		<==>	2015586	<==>	derived
+
+the last two line-items with values in columns 4 (all derived) are not stored yeah?
+
+➡️ Columns 2–3 are calculated/derived as necessary
+Wings, there is only one confirmed case of a column 2 value that is derived.  all the rest are editable.  here is the exemption:
+
+NON-CURRENT ASSETS	<==>		<==>		<==>		<==>	Title ONLY
+    PROPERTY & EQUIPMENT	<==>	2379333	<==>		<==>		<==>	editable
+    ADD: ACQUISITION, 2023	<==>		<==>		<==>		<==>	editable
+      TOTAL PPE AND ACQUISITION	<==>	2379333	<==>		<==>		<==>	derived
+    LESS: ACCUMULATED DEPRECIATION	<==>	1166517	<==>		<==>		<==>	editable
+
+
+➡️ pdf_column defines ONLY the intended “main” value location
+I do not understand this.
+
+This matches your mapping and your intention:
+
+Editable real values → stored in DB → placed in their intended column
+could be (col 2,3 or 4)
+
+Derived subtotals → appear where formulas say (column 3 or 4, or per one exemption above column 2)
+
+Your earlier <==> mapping already follows this.
+I hope we are on the same page on this.
+
+
+If we go for option A.  Can these line-items be religiously represented? Please tell me your understanding of these line-items Wings.  And how they map if we are doing option A.
+
+   LOAN RECEIVABLE: 	<==>		<==>		<==>		<==>	Sub-title (indented)
+     REGULAR LOANS (See attached Schedule)	<==>		<==>	8686226	<==>		<==>	editable
+     ASSOCIATES	<==>		<==>	746162	<==>		<==>	editable
+     MICRO PROJECT	<==>		<==>	1606977	<==>		<==>	editable
+     PAST DUE	<==>	578988	<==>		<==>		<==>	editable
+     LESS: ALLOWANCE FOR PROBABLE LOSSES	<==>	287087	<==>	291901	<==>	11331266	<==>	editable / derived(sub-total) / derived (sub-total)
+
+
+Before that just a clarification:
+A snippet from your financial value seeder you created financialvalue like so:
+
+foreach ($values as [$code, $amount]) {
+            FinancialValue::create([
+                'line_item_code' => $code,
+                'year' => $year,
+                'month' => $month,
+                'amount' => $amount,
+            ]);
+
+However on the migration for financial value you have this schema:
+Schema::create('financial_values', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('financial_line_item_id')
+                ->constrained('financial_line_items')
+                ->onDelete('cascade');
+
+            $table->integer('year');     
+            $table->integer('month');    
+
+            $table->decimal('value', 15, 2)
+                ->default(0);
+
+            $table->timestamps();
+        });
