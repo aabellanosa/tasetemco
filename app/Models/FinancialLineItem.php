@@ -13,4 +13,9 @@ class FinancialLineItem extends Model
         'is_editable',
         'display_order',
     ];
+
+    public function formulaMap()
+    {
+        return $this->hasOne(FinancialFormulaMap::class, 'financial_line_item_id');
+    }
 }

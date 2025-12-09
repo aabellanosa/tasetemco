@@ -200,3 +200,58 @@ Schema::create('financial_values', function (Blueprint $table) {
 
             $table->timestamps();
         });
+
+I've got an error Wings...  TypeError
+resources\views\financial\show.blade.php:65
+number_format(): Argument #1 ($num) must be of type float, array given
+And it can be traced here:
+
+@else
+                                {{-- Derived — bold --}}
+                                    <strong class="derived-value"
+                                        data-code="{{ $item['code'] }}"
+                                        data-pdfcol="{{ $item['pdf_column'] }}">
+                                        {{ number_format($item['value'], 2) }}
+                                    </strong>
+                                @endif
+
+
+
+
+Wings we are sooo close.  Only this that we have agreed and locked are not rendered correctly:    
+
+1. CASH & CASH EQUIVALENTS SUBSECTION
+ONE COOP (former CCB)
+
+Your PDF:
+
+col3 = editable  
+col4 = subtotal (derived)
+
+
+✔ Editable value → stored in col3
+✔ Subtotal of:
+
+LBP CA
+LBP SAVINGS
+DBP SAVINGS
+ONE COOP
+Goes to col4 (derived)
+
+It is currently rendered in the UI as:
+col3 -> blank no value
+col4 -> has an editable value 
+
+Please refer to our latest conversation on the correct interpretation of this Wings.
+
+=============
+Hmmm, Wings before we proceed with this patch I have a nagging feeling that this error is the result of the line-item:::  ADD: ACQUISITION, 2023.
+you see our treatment for this and you confirmed to have locked this as :
+
+    ADD: ACQUISITION, 2023	<==>		<==>		<==>		<==>	editable
+
+but i failed to put in zero on column 2 so it should have read:
+
+    ADD: ACQUISITION, 2023	<==>	0	<==>		<==>		<==>	editable
+
+Can you confirm Wings if this is what is causing the error.  And if it is, recommend a solution.

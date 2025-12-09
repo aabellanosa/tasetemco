@@ -10,93 +10,121 @@ class FinancialFormulaMapSeeder extends Seeder
 {
     public function run(): void
     {
+        // helper to resolve FK by code
+        $id = fn($code) =>
+            FinancialLineItem::where('code', $code)->value('id')
+            ?? throw new \Exception("Line item code '$code' not found.");
+
         $formulas = [
 
-            // ============================
-            // 1. ASSETS
-            // ============================
+            //----------------------------------------------------------
+            // CURRENT ASSETS → CASH & CASH EQUIVALENTS
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_cash_equivalents',
+                'formula'  => 'cash_on_hand + gcash_load + lbp_ca + lbp_savings + dbp_savings + one_coop',
+            ],
 
-            // --- Cash & Cash Equivalent ---
-            'cash_equivalent_total' => 
-                'cash_on_hand + gcash_and_load + cash_in_bank_savings + cash_in_bank_checking',
+            //----------------------------------------------------------
+            // LOAN RECEIVABLES
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_loans_receivable',
+                'formula'  =>
+                    'regular_loans + associates + micro_project + past_due - allowance_probable - unearned_income',
+            ],
 
-            // --- Other Current Assets ---
-            'past_due_adjusted' => 
-                'past_due - allowance_for_probable_losses',
+            //----------------------------------------------------------
+            // TOTAL CURRENT ASSETS
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_current_assets',
+                'formula'  =>
+                    'total_cash_equivalents + total_loans_receivable + advance_suppliers + merch_inventory',
+            ],
 
-            'total_loan_receivables_past_adjustments' =>
-                'regular_loans + associates + micro_project + past_due_adjusted',
+            //----------------------------------------------------------
+            // NON-CURRENT ASSETS → PPE
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_ppe_acquisition',
+                'formula'  => 'ppe + acquisition_2023',
+            ],
 
-            'total_current_assets' =>
-                'cash_equivalent_total + total_loan_receivables_past_adjustments + merchandise_inventory + bio_assets + advance_to_suppliers',
+            [
+                'code'     => 'ppe_net',
+                'formula'  => 'total_ppe_acquisition - accum_depreciation',
+            ],
 
-            // --- Non-Current Assets ---
-            'property_and_equipment_net' =>
-                'property_and_equipment + acquisition_2023 - accumulated_depreciation',
+            //----------------------------------------------------------
+            // NON-CURRENT ASSETS → INVESTMENTS
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_non_current_assets',
+                'formula'  =>
+                    'ppe_net + investment_pftech + investment_climbs + investment_ccb_cbss',
+            ],
 
-            'investments_total' =>
-                'investment_pftech + investment_climbs + investment_ccb_cbss',
+            //----------------------------------------------------------
+            // TOTAL ASSETS
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_assets',
+                'formula'  =>
+                    'total_current_assets + total_non_current_assets',
+            ],
 
-            'total_non_current_assets' =>
-                'property_and_equipment_net + investments_total',
+            //----------------------------------------------------------
+            // CURRENT LIABILITIES
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_current_liabilities',
+                'formula'  =>
+                    'savings_deposit + due_union_fed + patronage_refund + interest_share_capital',
+            ],
 
-            // --- TOTAL ASSETS ---
-            'total_assets' =>
-                'total_current_assets + total_non_current_assets',
+            //----------------------------------------------------------
+            // NON-CURRENT LIABILITIES
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_non_current_liabilities',
+                'formula'  =>
+                    'retirement_fund + revolving_fund + loans_lbp + loans_lgu + loans_ccb_cbss',
+            ],
 
+            //----------------------------------------------------------
+            // TOTAL LIABILITIES
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_liabilities',
+                'formula'  =>
+                    'total_current_liabilities + total_non_current_liabilities',
+            ],
 
-            // ============================
-            // 2. LIABILITIES
-            // ============================
+            //----------------------------------------------------------
+            // EQUITY → STATUTORY FUNDS
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_equity',
+                'formula'  =>
+                    'share_capital + grant_capital + reserve_fund + education_training + community_dev + optional_fund',
+            ],
 
-            // --- Current Liabilities ---
-            'total_current_liabilities' =>
-                'savings_deposit + due_to_union_federation + other_peso_savings + interest_on_share_capital_and_refund_payable + unearned_interest_income',
-
-            // --- Non-Current Liabilities ---
-            'total_loans_payable' =>
-                'loans_payable_lbp + loans_payable_lgu + loans_payable_ccb_cbss',
-
-            'total_non_current_liabilities' =>
-                'retirement_fund_payable + total_loans_payable',
-
-            // --- TOTAL LIABILITIES ---
-            'total_liabilities' =>
-                'total_current_liabilities + total_non_current_liabilities',
-
-
-            // ============================
-            // 3. EQUITY
-            // ============================
-
-            'total_statutory_fund' =>
-                'reserve_fund + education_and_training_fund + community_development_fund + optional_fund',
-
-            'total_equity' =>
-                'share_capital + grant_capital + total_statutory_fund',
-
-            // ============================
-            // GRAND TOTAL VALIDATION
-            // ============================
-
-            'total_liabilities_and_equity' =>
-                'total_liabilities + total_equity',
+            //----------------------------------------------------------
+            // TOTAL LIABILITIES & EQUITY
+            //----------------------------------------------------------
+            [
+                'code'     => 'total_liabilities_equity',
+                'formula'  =>
+                    'total_liabilities + total_equity',
+            ],
         ];
 
-        foreach ($formulas as $code => $formula) {
-            $item = FinancialLineItem::where('code', $code)->first();
-
-            if (!$item) {
-                echo "❌ Missing line-item code in metadata: {$code}\n";
-                continue;
-            }
-
-            FinancialFormulaMap::updateOrCreate(
-                ['line_item_id' => $item->id],
-                ['formula' => $formula]
-            );
+        foreach ($formulas as $f) {
+            FinancialFormulaMap::create([
+                'financial_line_item_id' => $id($f['code']),
+                'formula' => $f['formula'],
+            ]);
         }
-
-        echo "✅ Formula Map Seeder executed successfully.\n";
     }
 }

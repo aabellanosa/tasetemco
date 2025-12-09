@@ -5,336 +5,231 @@ namespace App\Services;
 use App\Models\FinancialFormulaMap;
 use App\Models\FinancialLineItem;
 use App\Models\FinancialValue;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Collection;
 use RuntimeException;
 
 class FinancialFormulaEvaluator
 {
-    protected array $cache = [];
-    protected int $maxDepth;
-    protected array $stack = [];
-
-    public function __construct(int $maxDepth = 50)
-    {
-        // Prevent infinite recursion for circular references
-        $this->maxDepth = $maxDepth;
-    }
-
     /**
-     * Public entry: evaluate a line item code for a specific year/month.
-     *
-     * @param string $code
-     * @param int $year
-     * @param int $month
-     * @return float
-     * @throws \Exception
+     * Evaluate all formulas and return a map keyed by code.
+     * Accepts optional $overrides: ['code' => numeric, ...] to temporarily replace DB values.
      */
-    public function evaluateLineItem(string $code, int $year, int $month): float
+    public function evaluateAll(int $year, int $month, array $overrides = []): array
     {
-        $key = "{$code}::{$year}-{$month}";
-        if (array_key_exists($key, $this->cache)) {
-            return $this->cache[$key];
+        // Load metadata
+        $items = FinancialLineItem::orderBy('display_order')->get()
+            ->keyBy('code'); // code => model
+
+        // Load editable values for the month (line_item_id => float)
+        $valuesByLineId = $this->loadEditableValues($year, $month);
+
+        // Map overrides from code->value into line_item_id->value
+        foreach ($overrides as $code => $val) {
+            if (isset($items[$code])) {
+                $valuesByLineId[$items[$code]->id] = (float)$val;
+            }
         }
 
-        // depth guard
-        if (count($this->stack) > $this->maxDepth) {
-            throw new RuntimeException("Max recursion depth ({$this->maxDepth}) reached while evaluating {$code}");
+        // Build formula map: code => formula
+        $formulaMaps = FinancialFormulaMap::all();
+        $formulas = [];
+        foreach ($formulaMaps as $fm) {
+            $line = FinancialLineItem::find($fm->financial_line_item_id);
+            if (! $line) continue;
+            $formulas[$line->code] = $fm->formula;
         }
 
-        if (in_array($key, $this->stack, true)) {
-            $cycle = implode(' -> ', array_merge($this->stack, [$key]));
-            throw new RuntimeException("Circular formula reference detected: {$cycle}");
+        // Compute derived values
+        $derived = [];
+
+        // Build dependencies and topo order
+        $deps = $this->buildDependencyGraph($formulas);
+        $order = $this->topoSort($deps);
+
+        foreach ($order as $code) {
+            $formula = $formulas[$code] ?? null;
+            if ($formula === null) continue;
+
+            $value = $this->evaluateFormulaForCode($formula, $code, $valuesByLineId, $derived, $items, $year, $month);
+            $derived[$code] = $value;
         }
 
-        $this->stack[] = $key;
+        // Build final result map combining editable and derived (returns numeric in 'value')
+        $result = [];
+        foreach ($items as $code => $item) {
+            $lineId = $item->id;
+            $isEditable = (bool) $item->is_editable;
+            $editableValue = $valuesByLineId[$lineId] ?? 0.0;
+            $derivedValue = $derived[$code] ?? null;
 
-        // Find line item
-        $lineItem = FinancialLineItem::where('code', $code)->first();
-        if (!$lineItem) {
-            array_pop($this->stack);
-            throw new RuntimeException("Line item not found: {$code}");
+            $finalValue = $isEditable ? $editableValue : ($derivedValue ?? 0.0);
+
+            $result[$code] = [
+                'line_item_id' => $lineId,
+                'code' => $code,
+                'pdf_column' => $item->pdf_column,
+                'editable' => $isEditable,
+                'value' => (float) $finalValue,
+            ];
         }
 
-        // If editable: return stored numeric value (or zero if null)
-        if ($lineItem->is_editable) {
-            $val = FinancialValue::where('line_item_id', $lineItem->id)
-                ->where('year', $year)
-                ->where('month', $month)
-                ->value('value');
-
-            $num = (float) ($val ?? 0.0);
-            $this->cache[$key] = $num;
-            array_pop($this->stack);
-            return $num;
-        }
-
-        // Derived: lookup formula by line_item
-        $formulaRow = FinancialFormulaMap::where('line_item_id', $lineItem->id)->first();
-        if (!$formulaRow) {
-            array_pop($this->stack);
-            // Missing formula for a non-editable line -> treat as 0 or throw
-            throw new RuntimeException("Missing formula for derived line item: {$code}");
-        }
-
-        $formula = $formulaRow->formula;
-
-        // Evaluate the formula string
-        $result = $this->evaluateExpression($formula, $year, $month);
-
-        // Cache and return
-        $this->cache[$key] = $result;
-        array_pop($this->stack);
         return $result;
     }
 
-    /**
-     * Evaluate an expression string (supports identifiers, numbers, +, -, parentheses and SUM()).
-     *
-     * @param string $expr
-     * @param int $year
-     * @param int $month
-     * @return float
-     */
-    public function evaluateExpression(string $expr, int $year, int $month): float
+    protected function loadEditableValues(int $year, int $month): array
     {
-        // Normalize: trim and collapse multiple whitespace
-        $expr = trim(preg_replace('/\s+/', ' ', $expr));
+        $rows = FinancialValue::where('year', $year)
+            ->where('month', $month)
+            ->get();
 
-        // Replace SUM(...) occurrences with a pseudo-function handler token so tokenizer can pick it up
-        // We'll handle SUM specially in `tokenize`/`rpnEvaluate`.
-        $tokens = $this->tokenize($expr);
+        $map = [];
+        foreach ($rows as $r) {
+            $map[$r->financial_line_item_id] = (float) $r->value;
+        }
 
-        $rpn = $this->toRPN($tokens);
-
-        return $this->rpnEvaluate($rpn, $year, $month);
+        return $map;
     }
 
     /**
-     * Tokenize the expression into tokens: identifiers, numbers, operators, parentheses, commas, functions.
-     *
-     * @param string $expr
-     * @return array
+     * Build dependency graph keyed by formula code:
+     * ['a' => ['b','c'], ...] meaning a depends on b,c
      */
-    protected function tokenize(string $expr): array
+    protected function buildDependencyGraph(array $formulas): array
     {
-        $pattern = '/
-            (\bSUM\b)                             # SUM function
-            |([A-Za-z_][A-Za-z0-9_]*)            # identifiers (codes)
-            |(\d+\.\d+|\d+)                      # numbers (integers or decimals)
-            |([\+\-])                            # plus or minus
-            |([\(\)])                            # parentheses
-            |(,)                                 # comma
-        /x';
-
-        preg_match_all($pattern, $expr, $matches, PREG_SET_ORDER);
-
-        $tokens = [];
-        foreach ($matches as $m) {
-            if (!empty($m[1])) {
-                $tokens[] = ['type' => 'func', 'value' => 'SUM'];
-            } elseif (!empty($m[2])) {
-                $tokens[] = ['type' => 'ident', 'value' => $m[2]];
-            } elseif (!empty($m[3])) {
-                $tokens[] = ['type' => 'number', 'value' => $m[3]];
-            } elseif (!empty($m[4])) {
-                $tokens[] = ['type' => 'op', 'value' => $m[4]];
-            } elseif (!empty($m[5])) {
-                $tokens[] = ['type' => 'paren', 'value' => $m[5]];
-            } elseif (!empty($m[6])) {
-                $tokens[] = ['type' => 'comma', 'value' => ','];
-            }
+        $graph = [];
+        foreach ($formulas as $code => $formula) {
+            $tokens = $this->extractTokensFromFormula($formula);
+            // remove pseudo-words that are function names like SUM
+            $tokens = array_filter($tokens, fn($t) => strtoupper($t) !== 'SUM');
+            // only keep unique and non-numeric tokens
+            $tokens = array_values(array_unique(array_filter($tokens, fn($t) => preg_match('/^[a-z_][a-z0-9_]*$/i', $t))));
+            $graph[$code] = $tokens;
         }
-
-        return $tokens;
+        return $graph;
     }
 
     /**
-     * Convert token list to Reverse Polish Notation (Shunting-yard algorithm)
-     * Supports +, -, parentheses and a SUM function (function arguments separated by commas).
-     *
-     * @param array $tokens
-     * @return array RPN token list
+     * Topologically sort dependency graph.
+     * Throws RuntimeException if a cycle is detected.
      */
-    protected function toRPN(array $tokens): array
+    protected function topoSort(array $graph): array
     {
-        $output = [];
-        $stack = [];
+        $visited = []; // 0=unseen, 1=visiting, 2=done
+        $order = [];
 
-        $precedence = ['+' => 1, '-' => 1];
-
-        foreach ($tokens as $token) {
-            switch ($token['type']) {
-                case 'number':
-                case 'ident':
-                    $output[] = $token;
-                    break;
-
-                case 'func':
-                    // push function onto stack
-                    $stack[] = $token;
-                    break;
-
-                case 'comma':
-                    // Until the token at the top of the stack is a left parenthesis,
-                    // pop operators onto the output queue
-                    while (!empty($stack) && end($stack)['type'] !== 'paren') {
-                        $output[] = array_pop($stack);
-                    }
-                    break;
-
-                case 'op':
-                    while (!empty($stack)) {
-                        $top = end($stack);
-                        if ($top['type'] === 'op' && $precedence[$top['value']] >= $precedence[$token['value']]) {
-                            $output[] = array_pop($stack);
-                            continue;
-                        }
-                        if ($top['type'] === 'func') {
-                            $output[] = array_pop($stack);
-                            continue;
-                        }
-                        break;
-                    }
-                    $stack[] = $token;
-                    break;
-
-                case 'paren':
-                    if ($token['value'] === '(') {
-                        $stack[] = $token;
-                    } else { // ')'
-                        while (!empty($stack) && end($stack)['type'] !== 'paren') {
-                            $output[] = array_pop($stack);
-                        }
-                        if (empty($stack)) {
-                            throw new RuntimeException("Mismatched parentheses in formula");
-                        }
-                        // pop the left parenthesis
-                        array_pop($stack);
-
-                        // if the token at the top of the stack is a function token, pop it onto the output queue
-                        if (!empty($stack) && end($stack)['type'] === 'func') {
-                            $output[] = array_pop($stack);
-                        }
-                    }
-                    break;
-
-                default:
-                    throw new RuntimeException("Unknown token type: " . $token['type']);
+        $visit = function($node) use (&$visit, &$visited, &$order, $graph) {
+            if (!array_key_exists($node, $visited)) $visited[$node] = 0;
+            if ($visited[$node] === 1) {
+                // cycle
+                throw new RuntimeException("Circular reference detected involving '{$node}'");
             }
+            if ($visited[$node] === 2) return;
+            $visited[$node] = 1;
+            foreach ($graph[$node] ?? [] as $dep) {
+                // only visit if dep is itself a formula (skip pure editables)
+                if (array_key_exists($dep, $graph)) {
+                    $visit($dep);
+                }
+            }
+            $visited[$node] = 2;
+            $order[] = $node;
+        };
+
+        foreach (array_keys($graph) as $n) {
+            if (!isset($visited[$n]) || $visited[$n] === 0) $visit($n);
         }
 
-        while (!empty($stack)) {
-            $t = array_pop($stack);
-            if ($t['type'] === 'paren') {
-                throw new RuntimeException("Mismatched parentheses in formula");
-            }
-            $output[] = $t;
-        }
-
-        return $output;
+        return $order;
     }
 
     /**
-     * Evaluate an RPN token list.
-     *
-     * Supports:
-     * - numbers
-     * - identifiers (resolved recursively via evaluateLineItem)
-     * - operators + and -
-     * - SUM function (variable number of args). SUM will be represented as a func token in RPN and we pop args until a marker.
-     *
-     * Our approach for SUM: In the RPN conversion we push SUM as a single token after its arguments,
-     * so during evaluation we will detect SUM token and pop arguments until we see a special marker.
-     *
-     * Simpler approach here: because the tokenization and RPN algorithm preserves order and functions are pushed
-     * after their args, we'll handle SUM by counting arguments based on commas/parentheses in toRPN.
-     *
-     * @param array $rpn
-     * @param int $year
-     * @param int $month
-     * @return float
+     * Evaluate a single formula for a code using current editable and derived maps.
      */
-    protected function rpnEvaluate(array $rpn, int $year, int $month): float
+    protected function evaluateFormulaForCode(string $formula, string $targetCode, array $editableValuesByLineId, array $derivedByCode, Collection $items, int $year, int $month): float
     {
-        $stack = [];
-        foreach ($rpn as $token) {
-            if ($token['type'] === 'number') {
-                $stack[] = (float) $token['value'];
-                continue;
+        // Replace SUM(someList) -> (a+b+c) style
+        $formula = $this->expandSumFunctions($formula);
+
+        // Replace tokens with numeric values
+        $replaced = preg_replace_callback('/[A-Za-z_][A-Za-z0-9_]*/', function($m) use ($editableValuesByLineId, $derivedByCode, $items, $year, $month, $targetCode) {
+            $tok = $m[0];
+
+            // SUM handled earlier; function names excluded
+            // First, if token equals target code (self-ref) return 0 to avoid trivial self ref
+            if ($tok === $targetCode) return '0';
+
+            // If token corresponds to a line item in items -> get its numeric value:
+            $item = $items->get($tok);
+            if ($item) {
+                $id = $item->id;
+                // editable?
+                if ($item->is_editable) {
+                    return (string) ($editableValuesByLineId[$id] ?? 0);
+                } else {
+                    // derived: maybe already computed in $derivedByCode
+                    if (array_key_exists($tok, $derivedByCode)) {
+                        return (string) $derivedByCode[$tok];
+                    }
+                    // derived not yet computed -> 0 fallback (it may be computed later by topo order)
+                    return '0';
+                }
             }
 
-            if ($token['type'] === 'ident') {
-                $code = $token['value'];
-                // recursively evaluate the referenced identifier
-                $val = $this->evaluateLineItem($code, $year, $month);
-                $stack[] = $val;
-                continue;
-            }
+            // If token is not a line item code, but numeric-like, return as is (e.g., '12')
+            if (is_numeric($tok)) return $tok;
 
-            if ($token['type'] === 'op') {
-                if (count($stack) < 2) {
-                    throw new RuntimeException("Invalid expression: operator '{$token['value']}' without enough operands");
-                }
-                $b = array_pop($stack);
-                $a = array_pop($stack);
-                switch ($token['value']) {
-                    case '+': $stack[] = $a + $b; break;
-                    case '-': $stack[] = $a - $b; break;
-                    default:
-                        throw new RuntimeException("Unsupported operator: {$token['value']}");
-                }
-                continue;
-            }
+            // Unknown token — treat as zero
+            return '0';
+        }, $formula);
 
-            if ($token['type'] === 'func') {
-                // Only supported function: SUM — we need to know how many args this SUM has.
-                if (strtoupper($token['value']) !== 'SUM') {
-                    throw new RuntimeException("Unsupported function: {$token['value']}");
-                }
-
-                // For SUM in this RPN implementation, arguments for SUM will already be on the stack.
-                // But we don't have an arg count marker. To handle this robustly we will:
-                // - Peek backwards into rpn to determine how many immediate previous tokens were pushed as args for this func.
-                // Simpler approach: We will store SUM arguments as a nested expression: SUM(a,b,c) results in tokens a b c SUM.
-                // So here, when seeing SUM, we must pop *all* arguments until ... but we can't distinguish.
-                //
-                // To make this reliable, our toRPN implementation ensures SUM's args are provided directly before the SUM:
-                // we will assume at least 1 arg is present; and because commas are handled in toRPN, the exact number of args
-                // equals the count of values pushed since the matching '(' was processed. For simplicity, we will pop until
-                // we reach a special marker push during toRPN... but we didn't create markers. To avoid complexity, we enforce:
-                // **SUM must be called with explicit identifiers/numbers only (no nested functions), and args will be popped
-                //  until the number of args equals the count of comma separators between parentheses computed earlier.**
-                //
-                // Given the limited function set, we will implement a pragmatic approach:
-                // - When toRPN converts func, it doesn't give us arg counts. We'll instead fallback to: pop all items from stack
-                //   until the last popped item was produced before this function's argument sequence started. This is messy.
-                //
-                // Simpler and robust approach: Avoid complex arg counting by rewriting SUM(expr) into (expr1 + expr2 + ...).
-                // We already do that in evaluateExpression by tokenizing SUM and leaving the operands; but building a robust
-                // general parser is non-trivial in this compact implementation.
-                //
-                // To keep this implementation practical and reliable: support SUM only when its arguments are identifiers or numbers.
-                //
-                // Implementation: Pop items until a marker or until we've popped at least 1 and the remaining RPN's previous token is not ident/number.
-                $args = [];
-
-                // Pop at least one arg
-                if (empty($stack)) {
-                    throw new RuntimeException("SUM requires at least one argument");
-                }
-
-                // We will pop until the stack is empty or until the previous rpn token type was function/paren - best effort
-                // But instead, we'll assume the last N entries belong to SUM where N is unknown; a safer approach:
-                // Rebuild SUM behavior by recomputing the SUM by parsing the original formula directly.
-                // For brevity and safety, implement a direct SUM extraction on the original formula before tokenization (see evaluateExpression).
-                throw new RuntimeException("SUM handling in RPN evaluation is not supported in this minimal implementation. Use SUM expansion in the formula string (e.g., a + b + c) or contact Wings to enable advanced SUM parsing.");
+        // Validate expression contains ONLY allowed characters now
+        if (!preg_match('/^[0-9\.\+\-\*\/\(\)\s,]*$/', $replaced)) {
+            // If commas remain (from malformed SUM) remove them
+            $replaced = str_replace(',', '+', $replaced);
+            // re-validate
+            if (!preg_match('/^[0-9\.\+\-\*\/\(\)\s]*$/', $replaced)) {
+                throw new RuntimeException("Unsafe or invalid formula after token replacement for '{$targetCode}': {$replaced}");
             }
         }
 
-        if (count($stack) !== 1) {
-            throw new RuntimeException("Invalid expression evaluation. Stack has " . count($stack) . " items.");
+        // Evaluate safely
+        // Wrap in (float) to ensure numeric
+        try {
+            // Evaluate using PHP's eval — restricted by prior validation
+            $val = 0.0;
+            // handle empty or whitespace-only
+            if (trim($replaced) === '') return 0.0;
+            $val = eval('return (' . $replaced . ');');
+            return is_numeric($val) ? (float) $val : 0.0;
+        } catch (\Throwable $e) {
+            throw new RuntimeException("Error evaluating formula for {$targetCode}: " . $e->getMessage());
         }
+    }
 
-        return (float) array_pop($stack);
+    /**
+     * Extract tokens (identifiers) from a formula string.
+     */
+    protected function extractTokensFromFormula(string $formula): array
+    {
+        preg_match_all('/[A-Za-z_][A-Za-z0-9_]*/', $formula, $m);
+        return $m[0] ?? [];
+    }
+
+    /**
+     * Expand SUM(...) occurrences to (a+b+...) so the evaluator can handle them simply.
+     * Supports comma or plus separated lists inside SUM.
+     */
+    protected function expandSumFunctions(string $formula): string
+    {
+        // handle nested SUMs by looping until no more SUM(
+        while (preg_match('/SUM\s*\(([^()]*)\)/i', $formula, $m)) {
+            $inner = $m[1];
+            // replace commas with +, and multiple + normalized
+            $expanded = preg_replace('/\s*,\s*/', '+', $inner);
+            $expanded = preg_replace('/\s*\+\s*/', '+', $expanded);
+            $replacement = '(' . $expanded . ')';
+            $formula = preg_replace('/SUM\s*\(' . preg_quote($m[1], '/') . '\)/i', $replacement, $formula, 1);
+        }
+        return $formula;
     }
 }
