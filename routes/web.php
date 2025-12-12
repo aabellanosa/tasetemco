@@ -3,8 +3,14 @@
 use App\Http\Controllers\FinancialController;
 use Illuminate\Support\Facades\Route;
 
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('financial.show', [
+        'year' => 2025,
+        'month' => 1
+    ]);
 });
 
 Route::get('/financial/{year}/{month}', [FinancialController::class, 'show'])->name('financial.show');
