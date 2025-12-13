@@ -5,6 +5,19 @@
 
     <h2 class="mb-4">Financial Statement – {{ \Carbon\Carbon::create($year, $month)->format('F Y') }}</h2>
 
+    @if (session('success'))
+        <div class="alert alert-success">
+            ✅ {{ session('success') }}
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger">
+            ❌ {{ session('error') }}
+        </div>
+    @endif
+
+
     {{-- Accounting Equation Warning --}}
     <div id="equationAlert" class="alert alert-danger d-none">
         ⚠ <strong>Warning:</strong> Assets ≠ Liabilities + Equity
@@ -15,96 +28,123 @@
         <small class="text-muted">Edit any numeric field — derived values update instantly.</small>
     </div>
 
-    <div class="table-responsive table-container">
-        <table class="table table-bordered align-middle" id="financialTable">
-            <thead class="table-light sticky-header">
-                <tr>
-                    <th style="width: 40%">Description</th>
-                    <th style="width: 20%" class="text-end">Col 2</th>
-                    <th style="width: 20%" class="text-end">Col 3</th>
-                    <th style="width: 20%" class="text-end">Col 4</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($lineItems as $item)
-                    <tr data-code="{{ $item['code'] }}">
-                        <td>
-                            <div style="margin-left: {{ ($item['indent'] ?? 0) * 20 }}px;">
-                                @if(!$item['editable'])
-                                    <strong>{{ $item['title'] }}</strong>
-                                @else
-                                    {{ $item['title'] }}
-                                @endif
-                            </div>
-                        </td>
+    <form id="fsForm" 
+        method="POST" 
+        action="{{ route('financial.save')}}">
+        @csrf
 
-                        {{-- Column 2 --}}
-                        <td class="text-end">
-                            @if($item['pdf_column'] == 2)
-                                @if($item['editable'])
-                                    <input type="text" inputmode="decimal" class="form-control text-end editable-input"
-                                        data-code="{{ $item['code'] }}" data-col="2"
-                                        value="{{ number_format($item['col2'] ?? 0, 2, '.', '') }}">
-                                @else
-                                    <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="2">
-                                        {{ number_format($item['col2'] ?? 0, 2) }}
-                                    </strong>
-                                @endif
-                            @else
-                                @if(isset($item['col2']) && $item['col2'] !== null)
-                                    <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="2">
-                                        {{ number_format($item['col2'], 2) }}
-                                    </strong>
-                                @endif
-                            @endif
-                        </td>
+        <input type="hidden" name="year" value="{{ $year }}">
+        <input type="hidden" name="month" value="{{ $month }}">
 
-                        {{-- Column 3 --}}
-                        <td class="text-end">
-                            @if($item['pdf_column'] == 3)
-                                @if($item['editable'])
-                                    <input type="text" inputmode="decimal" class="form-control text-end editable-input"
-                                        data-code="{{ $item['code'] }}" data-col="3"
-                                        value="{{ number_format($item['col3'] ?? 0, 2, '.', '') }}">
-                                @else
-                                    <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="3">
-                                        {{ number_format($item['col3'] ?? 0, 2) }}
-                                    </strong>
-                                @endif
-                            @else
-                                @if(isset($item['col3']) && $item['col3'] !== null)
-                                    <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="3">
-                                        {{ number_format($item['col3'], 2) }}
-                                    </strong>
-                                @endif
-                            @endif
-                        </td>
-
-                        {{-- Column 4 --}}
-                        <td class="text-end">
-                            @if($item['pdf_column'] == 4)
-                                @if($item['editable'])
-                                    <input type="text" inputmode="decimal" class="form-control text-end editable-input"
-                                        data-code="{{ $item['code'] }}" data-col="4"
-                                        value="{{ number_format($item['col4'] ?? 0, 2, '.', '') }}">
-                                @else
-                                    <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="4">
-                                        {{ number_format($item['col4'] ?? 0, 2) }}
-                                    </strong>
-                                @endif
-                            @else
-                                @if(isset($item['col4']) && $item['col4'] !== null)
-                                    <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="4">
-                                        {{ number_format($item['col4'], 2) }}
-                                    </strong>
-                                @endif
-                            @endif
-                        </td>
+        
+        <div class="table-responsive table-container">
+            <table class="table table-bordered align-middle" id="financialTable">
+                <thead class="table-light sticky-header">
+                    <tr>
+                        <th style="width: 40%">Description</th>
+                        <th style="width: 20%" class="text-end">Col 2</th>
+                        <th style="width: 20%" class="text-end">Col 3</th>
+                        <th style="width: 20%" class="text-end">Col 4</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach ($lineItems as $item)
+                        <tr data-code="{{ $item['code'] }}">
+                            <td>
+                                <div style="margin-left: {{ ($item['indent'] ?? 0) * 20 }}px;">
+                                    @if(!$item['editable'])
+                                        <strong>{{ $item['title'] }}</strong>
+                                    @else
+                                        {{ $item['title'] }}
+                                    @endif
+                                </div>
+                            </td>
+    
+                            {{-- Column 2 --}}
+                            <td class="text-end">
+                                @if($item['pdf_column'] == 2)
+                                    @if($item['editable'])
+                                        <input 
+                                            type="text" 
+                                            inputmode="decimal" class="form-control text-end editable-input"
+                                            name="values[{{ $item['code'] }}]"
+                                            data-code="{{ $item['code'] }}" data-col="2"
+                                            value="{{ number_format($item['col2'] ?? 0, 2, '.', '') }}">
+                                    @else
+                                        <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="2">
+                                            {{ number_format($item['col2'] ?? 0, 2) }}
+                                        </strong>
+                                    @endif
+                                @else
+                                    @if(isset($item['col2']) && $item['col2'] !== null)
+                                        <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="2">
+                                            {{ number_format($item['col2'], 2) }}
+                                        </strong>
+                                    @endif
+                                @endif
+                            </td>
+    
+                            {{-- Column 3 --}}
+                            <td class="text-end">
+                                @if($item['pdf_column'] == 3)
+                                    @if($item['editable'])
+                                        <input 
+                                            type="text" 
+                                            inputmode="decimal" class="form-control text-end editable-input"
+                                            name="values[{{ $item['code'] }}]"
+                                            data-code="{{ $item['code'] }}" data-col="3"
+                                            value="{{ number_format($item['col3'] ?? 0, 2, '.', '') }}">
+                                    @else
+                                        <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="3">
+                                            {{ number_format($item['col3'] ?? 0, 2) }}
+                                        </strong>
+                                    @endif
+                                @else
+                                    @if(isset($item['col3']) && $item['col3'] !== null)
+                                        <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="3">
+                                            {{ number_format($item['col3'], 2) }}
+                                        </strong>
+                                    @endif
+                                @endif
+                            </td>
+    
+                            {{-- Column 4 --}}
+                            <td class="text-end">
+                                @if($item['pdf_column'] == 4)
+                                    @if($item['editable'])
+                                        <input 
+                                            type="text" 
+                                            inputmode="decimal" 
+                                            class="form-control text-end editable-input"
+                                            name="values[{{ $item['code'] }}]"
+                                            data-code="{{ $item['code'] }}" data-col="4"
+                                            value="{{ number_format($item['col4'] ?? 0, 2, '.', '') }}">
+                                    @else
+                                        <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="4">
+                                            {{ number_format($item['col4'] ?? 0, 2) }}
+                                        </strong>
+                                    @endif
+                                @else
+                                    @if(isset($item['col4']) && $item['col4'] !== null)
+                                        <strong class="derived-value" data-code="{{ $item['code'] }}" data-col="4">
+                                            {{ number_format($item['col4'], 2) }}
+                                        </strong>
+                                    @endif
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        <div class="text-end mt-4">
+            <button type="submit" class="btn btn-primary">
+                Save Financial Statement
+            </button>
+        </div>
+        
+
+    </form>
 
     
 
@@ -125,6 +165,8 @@
 */
 
 (() => {
+    let isBalanced = true;
+
     // Server-provided formulas (array of {code, formula})
     const FORMULAS = @json($formulas);
 
@@ -363,10 +405,12 @@
         if (Math.abs(diff) < 0.005) {
             alert.classList.add('d-none');
             if (diffEl) diffEl.textContent = '';
+            isBalanced = true;
             return true;
         } else {
             alert.classList.remove('d-none');
             if (diffEl) diffEl.textContent = 'Difference: ' + fmt(diff) + ' (Assets - (Liabilities + Equity))';
+            isBalanced = false;
             return false;
         }
     }
@@ -401,6 +445,15 @@
     window.addEventListener('load', () => {
         // initial recalc
         recalcDriver();
+    });
+
+    const fsForm = document.getElementById('fsForm');
+
+    fsForm.addEventListener('submit', function(e) {
+        if (!isBalanced) {
+            e.preventDefault();
+            alert('Financial Statement is NOT balanced.\nPlease correct before saving.');
+        }
     });
 
 })();

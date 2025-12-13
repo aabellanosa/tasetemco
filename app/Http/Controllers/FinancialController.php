@@ -184,6 +184,7 @@ class FinancialController extends Controller
      */
     public function save(Request $request)
     {
+        // dd($request->all());
         $data = $request->validate([
             'year' => 'required|integer',
             'month' => 'required|integer',
@@ -223,10 +224,17 @@ class FinancialController extends Controller
                 );
             }
             DB::commit();
-            return response()->json(['ok' => true]);
+            // return response()->json(['ok' => true]);
+            return redirect()
+                ->route('financial.show', ['year' => $year, 'month' => $month])
+                ->with('success', 'Financial Statement saved successfully.');
+
         } catch (\Throwable $e) {
             DB::rollBack();
-            return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+            // return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+            return redirect()
+                ->route('financial.show', ['year' => $year, 'month' => $month])
+                ->with('error', 'Save failed: ' . $e->getMessage());
         }
     }
 

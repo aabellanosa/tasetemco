@@ -17,5 +17,5 @@ Route::get('/financial/{year}/{month}', [FinancialController::class, 'show'])->n
 Route::post('/financial/{year}/{month}', [FinancialController::class, 'update'])->name('financial.update');
 
 Route::post('/financial/recalc', [FinancialController::class, 'recalc']);
-Route::post('/financial/save', [FinancialController::class, 'save']);
+Route::post('/financial/save', [FinancialController::class, 'save'])->name('financial.save');
 Route::post('/financial/rollover', [FinancialController::class, 'rollover']);
