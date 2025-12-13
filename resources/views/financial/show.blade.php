@@ -147,6 +147,10 @@
             </table>
         </div>
         <div class="text-end mt-4">
+            <button type="button" id="clearEntriesBtn" class="btn btn-outline-danger me-2">
+                Clear Entries
+            </button>
+
             <button type="submit" class="btn btn-primary">
                 Save Financial Statement
             </button>
@@ -464,6 +468,28 @@
             alert('Financial Statement is NOT balanced.\nPlease correct before saving.');
         }
     });
+
+    document.getElementById('clearEntriesBtn').addEventListener('click', function () {
+
+        if (!confirm('Are you sure you want to clear all entries? This will not be saved until you click Save.')) {
+            return;
+        }
+
+        document.querySelectorAll('.editable-input').forEach(inp => {
+            inp.value = '0.00';
+        });
+
+        // Trigger recalculation so derived fields update immediately
+        if (typeof recalcDriver === 'function') {
+            recalcDriver();
+        } else {
+            // fallback: dispatch input event
+            document.querySelectorAll('.editable-input').forEach(inp => {
+                inp.dispatchEvent(new Event('input', { bubbles: true }));
+            });
+        }
+    });
+
 
 })();
 </script>
