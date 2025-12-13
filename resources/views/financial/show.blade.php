@@ -147,6 +147,15 @@
             </table>
         </div>
         <div class="text-end mt-4">
+            <a
+                href="{{ route('financial.print', [$year, $month]) }}"
+                target="_blank"
+                class="btn btn-outline-secondary me-2"
+            >
+                Print Statement
+            </a>
+
+
             <button type="button" id="clearEntriesBtn" class="btn btn-outline-danger me-2">
                 Clear Entries
             </button>

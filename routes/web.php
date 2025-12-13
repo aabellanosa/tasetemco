@@ -14,6 +14,7 @@ Route::get('/', function () {
 });
 
 Route::get('/financial/{year}/{month}', [FinancialController::class, 'show'])->name('financial.show');
+Route::get('/financial/{year}/{month}/print', [FinancialController::class, 'print'])->name('financial.print');
 Route::post('/financial/{year}/{month}', [FinancialController::class, 'update'])->name('financial.update');
 
 Route::post('/financial/recalc', [FinancialController::class, 'recalc']);

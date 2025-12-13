@@ -204,13 +204,203 @@ class FinancialController extends Controller
         ]);
     }
 
+    public function print($year, $month)
+    {
+        $year = (int)$year;
+        $month = (int)$month;
 
-        /**
+        // evaluator (server-side) to produce initial/resolved numbers (used for initial rendering)
+        $evaluator = new \App\Services\FinancialFormulaEvaluator();
+        
+        //checking diri sa rollover kung naa value last month
+        ////////////////////
+        $hasCurrentData = FinancialValue::where('year', $year)
+            ->where('month', $month)
+            ->exists();
+
+        $infoMessage = null;
+
+
+        $prevYear  = $month === 1 ? $year - 1 : $year;
+        $prevMonth = $month === 1 ? 12 : $month - 1;
+
+        $hasPrevData = FinancialValue::where('year', $prevYear)
+            ->where('month', $prevMonth)
+            ->exists();        
+
+        if (! $hasCurrentData && $hasPrevData) {
+
+            $editableItems = FinancialLineItem::where('is_editable', 1)->get();
+
+            foreach ($editableItems as $item) {
+
+                $prevValue = FinancialValue::where('financial_line_item_id', $item->id)
+                    ->where('year', $prevYear)
+                    ->where('month', $prevMonth)
+                    ->value('value');
+
+                if ($prevValue !== null) {
+                    FinancialValue::updateOrCreate(
+                        [
+                            'financial_line_item_id' => $item->id,
+                            'year'  => $year,
+                            'month' => $month,
+                        ],
+                        [
+                            'value' => (float) $prevValue,
+                        ]
+                    );
+                }
+            }
+
+            // session()->flash(
+            //     'info',
+            //     'Values rolled over from '
+            //     . \Carbon\Carbon::create($prevYear, $prevMonth)->format('F Y')
+            // );
+            $infoMessage = sprintf(
+                'ℹ Values preloaded from %s %d.',
+                \Carbon\Carbon::create($prevYear, $prevMonth)->format('F'),
+                $prevYear
+            ); 
+        } else if (!$hasCurrentData && !$hasPrevData) {
+            $infoMessage = sprintf(
+                'ℹ No prior financial data found. Starting a fresh Financial Statement for %s %d.',
+                \Carbon\Carbon::create($year, $month)->format('F'),
+                $year
+            );
+        }
+
+
+        ////////////////////
+
+        
+        $resolved = $evaluator->evaluateAll($year, $month);
+
+        // helper to get numeric final value for any code (falls back to DB if missing)
+        $getNumeric = function(string $code) use ($resolved, $year, $month) : float {
+            if (isset($resolved[$code]) && is_array($resolved[$code]) && isset($resolved[$code]['value'])) {
+                return (float)$resolved[$code]['value'];
+            }
+            $item = \App\Models\FinancialLineItem::where('code', $code)->first();
+            if ($item) {
+                $dbVal = \App\Models\FinancialValue::where('financial_line_item_id', $item->id)
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->value('value');
+                return is_null($dbVal) ? 0.0 : (float)$dbVal;
+            }
+            return 0.0;
+        };
+
+        // load metadata in order
+        $items = \App\Models\FinancialLineItem::orderBy('display_order')->get();
+
+        // Build lineItems with explicit col2/col3/col4 slots (as we implemented earlier)
+        $lineItems = $items->map(function ($item) use ($year, $month, $resolved, $getNumeric) {
+
+            $col2 = null; $col3 = null; $col4 = null;
+
+            // editable
+            $editableValue = null;
+            if ((bool)$item->is_editable) {
+                $dbVal = \App\Models\FinancialValue::where('financial_line_item_id', $item->id)
+                    ->where('year', $year)
+                    ->where('month', $month)
+                    ->value('value');
+
+                $editableValue = is_null($dbVal) ? 0.0 : (float)$dbVal;
+                $targetCol = (int)$item->pdf_column;
+                if ($targetCol === 2) $col2 = $editableValue;
+                if ($targetCol === 3) $col3 = $editableValue;
+                if ($targetCol === 4) $col4 = $editableValue;
+            }
+
+            // derived primary value
+            if (!(bool)$item->is_editable) {
+                if (isset($resolved[$item->code]) && is_array($resolved[$item->code])) {
+                    $derivedValue = (float)($resolved[$item->code]['value'] ?? 0.0);
+                    $targetCol = (int)$item->pdf_column;
+                    if ($targetCol === 2) $col2 = $derivedValue;
+                    if ($targetCol === 3) $col3 = $derivedValue;
+                    if ($targetCol === 4) $col4 = $derivedValue;
+                }
+            }
+
+            // Special multi-column rules (same as locked rules)
+            if ($item->code === 'one_coop') {
+                $sum = 0.0;
+                $sum += $getNumeric('lbp_ca');
+                $sum += $getNumeric('lbp_savings');
+                $sum += $getNumeric('dbp_savings');
+                $sum += $getNumeric('one_coop');
+                $col4 = (float)$sum;
+            }
+
+            if ($item->code === 'allowance_probable') {
+                $allow = $editableValue ?? $getNumeric('allowance_probable');
+                $pastDue = $getNumeric('past_due');
+                $col3 = (float)($pastDue - $allow);
+
+                $regular = $getNumeric('regular_loans');
+                $assoc = $getNumeric('associates');
+                $micro = $getNumeric('micro_project');
+                $col4 = (float)($regular + $assoc + $micro + $col3);
+            }
+
+            if ($item->code === 'investment_ccb_cbss') {
+                $col3 = (float)($getNumeric('investment_pftech') + $getNumeric('investment_climbs') + $getNumeric('investment_ccb_cbss'));
+            }
+
+            if ($item->code === 'loans_ccb_cbss') {
+                $col3 = (float)($getNumeric('loans_lbp') + $getNumeric('loans_lgu') + $getNumeric('loans_ccb_cbss'));
+            }
+
+            if ($item->code === 'optional_fund') {
+                $col3 = (float)($getNumeric('reserve_fund') + $getNumeric('education_training') + $getNumeric('community_dev') + $getNumeric('optional_fund'));
+            }
+
+            return [
+                'id' => $item->id,
+                'code' => $item->code,
+                'title' => $item->label ?? $item->title ?? $item->code,
+                'indent' => $item->indent_level ?? $item->indent ?? 0,
+                'pdf_column' => (int)$item->pdf_column,
+                'editable' => (bool)$item->is_editable,
+                'col2' => is_null($col2) ? null : (float)$col2,
+                'col3' => is_null($col3) ? null : (float)$col3,
+                'col4' => is_null($col4) ? null : (float)$col4,
+            ];
+        })->values()->toArray();
+
+        // Build formulas payload for JS (pull formula string keyed by code)
+        $formulaRows = \App\Models\FinancialFormulaMap::with('lineItem')->get();
+        $formulas = [];
+        foreach ($formulaRows as $r) {
+            $li = $r->lineItem;
+            if ($li) {
+                $formulas[] = [
+                    'code' => $li->code,
+                    'formula' => $r->formula,
+                ];
+            }
+        }
+
+        return view('financial.print', [
+            'year' => $year,
+            'month' => $month,
+            'lineItems' => $lineItems,
+        ]);
+    }
+
+
+    /**
      * POST /financial/recalc
      * Accepts JSON: { year, month, values: { code: number, ... } }
      * Returns { values: { code: number }, equation_ok: bool }
      */
-    public function recalc(Request $request)
+    
+        public function recalc(Request $request)
     {
         $data = $request->validate([
             'year' => 'required|integer',
