@@ -17,6 +17,15 @@
         </div>
     @endif
 
+    @if (!empty($infoMessage))
+        <div class="alert alert-info">
+             {{ $infoMessage }}
+        </div>
+        
+    @endif
+
+
+
 
     {{-- Accounting Equation Warning --}}
     <div id="equationAlert" class="alert alert-danger d-none">

@@ -20,6 +20,70 @@ class FinancialController extends Controller
 
         // evaluator (server-side) to produce initial/resolved numbers (used for initial rendering)
         $evaluator = new \App\Services\FinancialFormulaEvaluator();
+        
+        //checking diri sa rollover kung naa value last month
+        ////////////////////
+        $hasCurrentData = FinancialValue::where('year', $year)
+            ->where('month', $month)
+            ->exists();
+
+        $infoMessage = null;
+
+
+        $prevYear  = $month === 1 ? $year - 1 : $year;
+        $prevMonth = $month === 1 ? 12 : $month - 1;
+
+        $hasPrevData = FinancialValue::where('year', $prevYear)
+            ->where('month', $prevMonth)
+            ->exists();        
+
+        if (! $hasCurrentData && $hasPrevData) {
+
+            $editableItems = FinancialLineItem::where('is_editable', 1)->get();
+
+            foreach ($editableItems as $item) {
+
+                $prevValue = FinancialValue::where('financial_line_item_id', $item->id)
+                    ->where('year', $prevYear)
+                    ->where('month', $prevMonth)
+                    ->value('value');
+
+                if ($prevValue !== null) {
+                    FinancialValue::updateOrCreate(
+                        [
+                            'financial_line_item_id' => $item->id,
+                            'year'  => $year,
+                            'month' => $month,
+                        ],
+                        [
+                            'value' => (float) $prevValue,
+                        ]
+                    );
+                }
+            }
+
+            // session()->flash(
+            //     'info',
+            //     'Values rolled over from '
+            //     . \Carbon\Carbon::create($prevYear, $prevMonth)->format('F Y')
+            // );
+            $infoMessage = sprintf(
+                'ℹ Values preloaded from %s %d.',
+                \Carbon\Carbon::create($prevYear, $prevMonth)->format('F'),
+                $prevYear
+            ); 
+        } else if (!$hasCurrentData && !$hasPrevData) {
+            $infoMessage = sprintf(
+                'ℹ No prior financial data found. Starting a fresh Financial Statement for %s %d.',
+                \Carbon\Carbon::create($year, $month)->format('F'),
+                $year
+            );
+        }
+
+
+        ////////////////////
+
+        
         $resolved = $evaluator->evaluateAll($year, $month);
 
         // helper to get numeric final value for any code (falls back to DB if missing)
@@ -136,6 +200,7 @@ class FinancialController extends Controller
             'month' => $month,
             'lineItems' => $lineItems,
             'formulas' => $formulas,
+            'infoMessage' => $infoMessage,
         ]);
     }
 
@@ -296,6 +361,12 @@ class FinancialController extends Controller
         }
     }
 
-
+    private function previousPeriod(int $year, int $month): array
+    {
+        if ($month === 1) {
+            return [$year - 1, 12];
+        }
+        return [$year, $month - 1];
+    }
     
 }
