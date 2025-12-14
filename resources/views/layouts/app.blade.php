@@ -1,60 +1,45 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Financial Statement</title>
+        <title>{{ config('app.name', 'Laravel') }}</title>
 
-    {{-- Bootstrap 5 CDN --}}
-    <link 
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
-        rel="stylesheet"
-    >
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
-    <style>
-        .table-container {
-            max-height: 400px; /* Set a maximum height for the scrollable area */
-            overflow-y: auto; /* Enable vertical scrolling */
-        }
 
-        .sticky-header th {
-            position: sticky;
-            top: 0; /* Stick to the top of the .table-container */
-            background-color: #f8f9fa; /* Add a background color to prevent content from showing through */
-            z-index: 10; /* Ensure the header is above other table content */
-            /* Add box-shadow for better visual separation */
-            box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.4);
-        }
-    </style>    
-    @yield('styles')
-</head>
-<body class="bg-light">
+        <link 
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+            rel="stylesheet"
+        >
+        <link rel="stylesheet" href="{{ asset('css/stickytableheader.css') }}">
+        @stack('styles')
 
-    {{-- Top Navigation --}}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#">
-                Financial Position
-            </a>
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
+    <body class="font-sans antialiased">
+        <div class="min-h-screen bg-gray-100">
+            @include('layouts.navigation')
 
-            <div class="ms-auto text-white">
-                {{ date('F Y') }}
-            </div>
+            <!-- Page Heading -->
+            @isset($header)
+                <header class="bg-white shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header }}
+                    </div>
+                </header>
+            @endisset
+
+            <!-- Page Content -->
+            <main>
+                {{ $slot }}
+            </main>
         </div>
-    </nav>
-
-    {{-- Main Page Content --}}
-    <main>
-        @yield('content')
-    </main>
-
-    {{-- Bootstrap JS (optional but recommended for components) --}}
-    <script 
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js">
-    </script>
-    
-    @yield('scripts')
-
-</body>
+        @stack('scripts')
+    </body>
 </html>
