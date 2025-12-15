@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="container py-4">
+    <div class="container max-w-7xl py-4">
     
         <x-slot name="header">
             <h2 class="mb-4">Financial Statement – {{ \Carbon\Carbon::create($year, $month)->format('F Y') }}</h2>
