@@ -9,7 +9,7 @@ Route::get('/', function () {
 
 
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', function () {
         return redirect()->route('financial.show', [
             'year' => 2025,

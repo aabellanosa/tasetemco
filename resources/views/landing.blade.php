@@ -2,11 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Cooperative Financial System</title>
+    <title>Tasetemco Financial Management System</title>
 
     <link rel="icon" href="{{ asset('favicon.ico') }}">
 
     <style>
+        /* Reset */
+        html, body {
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
@@ -14,13 +21,28 @@
             color: #212529;
         }
 
+        /* Page Background */
+        .landing-page {
+            background-image: url('{{ asset("images/background-desktop.png") }}');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: cover;
+        }
+
         .container {
-            max-width: 900px;
-            margin: 80px auto;
+            max-width: 700px;
+            margin: 150px auto 0 auto;
             padding: 40px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            /* background: #fff; */
+            /* border-radius: 8px; */
+            /* box-shadow: 0 4px 12px rgba(0,0,0,0.08); */
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.15); /* Transparent white */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px); /* Frosted glass effect */
+            -webkit-backdrop-filter: blur(10px); /* Safari support */
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            /* color: white; */
         }
 
         h1 {
@@ -56,13 +78,13 @@
         }
     </style>
 </head>
-<body>
+<body class="landing-page">
 
 <div class="container">
-    <h1>Cooperative Financial Statement System</h1>
+    <h1>Tasetemco Cooperative Financial Management System</h1>
 
     <p>
-        This system is a proof-of-concept for generating, reviewing, and printing
+        This system is used for generating, reviewing, and printing
         cooperative financial statements in a structured and auditable manner.
     </p>
 
