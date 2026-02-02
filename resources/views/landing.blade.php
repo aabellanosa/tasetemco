@@ -81,7 +81,7 @@
 <body class="landing-page">
 
 <div class="container">
-    <h1>Tasetemco Cooperative Financial Management System</h1>
+    <h1>Tasetemco Coperative Financial Management System</h1>
 
     <p>
         This system is used for generating, reviewing, and printing
